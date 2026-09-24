@@ -1,0 +1,29 @@
+defaults:
+  - _self_
+  - dataset: dataset_echotab
+  - model: model_echotab
+  - train: pretrain_echotab
+
+seed: 42
+
+# Paths
+model_dir: ${oc.env:ECHOTAB_ROOT}         # path to this repository
+data_dir: /path/to/mimic/echo-tab          # root directory of the prepared data (see README)
+save_dir: ${model_dir}/training_logs       # logs, checkpoints, metrics and predictions
+experiment_name:                           # default: derived from the hyperparameters
+suffix:                                    # appended to the derived experiment name
+
+# Execute test after training?
+test: true
+
+# Training
+num_gpus: 1
+max_epochs: 30
+save_top_k: 1
+check_model_every_n_epochs: 1
+check_val_every_n_epoch: 1
+log_every_n_steps: 10
+
+# Checkpoint selection
+metric_to_monitor: val_metrics/mean_r2
+metric_mode: max

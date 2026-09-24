@@ -1,0 +1,10 @@
+diagnosis,measurement
+aortic_stenosis,"av_mean_grad, av_pk_grad, av_pk_vel, av_area_continuity, av_vti, lvot_diam, lvot_pk_vel, lvot_vti"
+aortic_regurg,ar_pr_halftime
+mitral_regurg,mv_e_decel
+la_size,"la_dimen, la_4ch_length, la_vol"
+ra_size,ra_length
+lv_size,"lvedd, lvesd, biplane_lvedv, biplane_lvesv"
+rv_size,rv_diam
+lvef_class,biplane_lvef
+rv_function,tapse

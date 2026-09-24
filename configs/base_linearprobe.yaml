@@ -1,0 +1,25 @@
+defaults:
+  - _self_
+  - downstream_task: diagnosis_ordinal_classification_mimic
+
+seed: 42
+
+# Paths
+model_dir: ${oc.env:ECHOTAB_ROOT}         # path to this repository
+data_dir: /path/to/mimic/echo-tab          # root directory of the prepared data (see README)
+save_dir: ${model_dir}/training_logs
+experiment_name:
+suffix:
+
+# Pretrained EchoTab run: directory containing config.yaml and checkpoints/
+echotab_run_dir: ???
+# Optional override of the phenotype list stored in the pretraining config.yaml
+label_list_path:
+
+validate: true
+test: true
+
+num_gpus: 1
+
+train:
+  task: linearprobe

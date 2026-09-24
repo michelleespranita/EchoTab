@@ -1,0 +1,37 @@
+batch_size: 4
+accum_iter: 16
+num_workers: 8
+pin_memory: true
+
+dataset_name: mimic
+
+paths:
+  # One row per echo clip: echo_study_id, echo_view, echo_filepath, and one column per
+  # measurement (named as in the phenotype list; NaN where missing).
+  data_train: ${data_dir}/pretrain/paired_echo_sr.csv
+  data_val: ${data_dir}/val/paired_echo_sr.csv
+  data_test: ${data_dir}/test/paired_echo_sr.csv
+  phenotype_col_name: phenotype
+
+echo:
+  sampling_rate: 2
+  # Tokens of patches whose mean EchoPrime-normalised intensity is <= this value are
+  # treated as background (only used with model.echo.use_bg_removal=true).
+  background_threshold: -0.6
+  # View types that are never loaded (treated as absent).
+  excluded_view_types: ['Doppler_Parasternal_Long', 'Doppler_Parasternal_Short', 'SSN', 'Subcostal']
+
+tab:
+  # Measurements to reconstruct; the row order defines the order of the model outputs.
+  label_list_path: ${model_dir}/data/mimic/phenotype_list.csv
+  winsorization: # values outside the train-split percentiles are set to missing
+    use: true
+    lower_percentile: 1.0
+    upper_percentile: 99.0
+    physical_bounds: null # optional {phenotype: [lo, hi]}, overrides the percentiles
+  normalization:
+    use: false # must be false with train.l2_loss.use_var_per_task=true
+    normalize_per_target: true
+  # Phenotypes with fewer non-missing studies than this in any split are excluded from
+  # the evaluation metrics (and from winsorization).
+  min_eval_samples: 5

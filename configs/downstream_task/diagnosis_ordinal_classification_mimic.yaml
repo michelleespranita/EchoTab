@@ -1,0 +1,30 @@
+dataset: mimic
+task_type: ordinal_classification
+
+# Diagnosis column in the diagnosis label CSVs, one of: aortic_stenosis, aortic_regurg,
+# mitral_stenosis, mitral_regurg, la_size, ra_size, lv_size, rv_size, lvef_class, rv_function
+target: aortic_stenosis
+
+# Study representation (mean of EchoTab measurement tokens):
+#   measurement_tokens     - tokens of the measurements mapped to `target` (paths.diagnosis_measurement_map)
+#   measurement_tokens_all - tokens of all measurements
+feature_source: measurement_tokens
+
+# Clip loading
+img_size: 224
+num_frames: 16
+sampling_rate: 2
+excluded_view_types: ['Doppler_Parasternal_Long', 'Doppler_Parasternal_Short', 'SSN', 'Subcostal']
+
+batch_size: 8
+num_workers: 8
+
+paths:
+  type: _balanced # "" = full train split, "_balanced" = class-balanced train split
+
+  # One row per echo clip: echo_study_id, echo_view, echo_filepath and one column per diagnosis
+  data_train: ${data_dir}/pretrain/diagnosis_labels${downstream_task.paths.type}.csv
+  data_val: ${data_dir}/val/diagnosis_labels.csv
+  data_test: ${data_dir}/test/diagnosis_labels.csv
+
+  diagnosis_measurement_map: ${model_dir}/data/mimic/diagnosis_measurement_map.csv

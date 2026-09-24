@@ -1,0 +1,35 @@
+echo: # echo branch (EchoPrime)
+  img_size: 224
+  num_frames: 16
+  use_learnable_view_emb: true  # add a learnable view-type embedding to the echo tokens
+  preserve_local_tokens: true   # keep all 392 local tokens per view (else mean-pool to 1 token per view)
+  use_bg_removal: true          # mask background patches (see dataset.echo.background_threshold)
+
+tab: # tabular branch
+  embed_dim: 768 # dimension of the learnable measurement embeddings
+
+tab_decoder:
+  num_layers: 2
+  num_heads: 4
+  dropout: 0.0
+  layerscale_init: 1.0 # init of the learnable scale on the cross-attention residual
+  echo_projection:
+    num_layers: 1      # LayerNorm + Linear on the echo tokens (0 = identity)
+  tab_projection:
+    num_layers: 1      # LayerNorm + Linear on the measurement queries (0 = identity)
+
+prediction_head:
+  # independent    - one MLP per measurement (IndependentHeads)
+  # shared         - one MLP shared by all measurements (SharedHead)
+  # partial_shared - shared MLP + hypernetwork-generated per-measurement low-rank delta (PartialSharedHead)
+  head_type: partial_shared
+  num_head_layers: 2
+  head_dropout: 0.0
+
+  # partial_shared only
+  cond_proj_dim: 128        # project the measurement embedding before the hypernetwork (null = no projection)
+  lora_rank: 8              # rank of the generated weight delta
+  lora_alpha: 16.0          # the delta is scaled by lora_alpha / lora_rank
+  hyper_hidden: 256         # hidden width of the hypernetwork body
+  hypernet_size: M          # L (A+B in one pass) | M (A and B in two passes) | S (one pass per rank-1 factor)
+  use_single_hypernet: true # share the hypernetwork body between the hidden and the output layer

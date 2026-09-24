@@ -1,0 +1,46 @@
+phenotype,description,unit,section
+ar_pr_halftime,Aortic Valve - AR Pressure Half Time,sec,Aortic Valve
+arch_diam,Aorta - Arch Diameter,cm,Aorta
+ascending_diam,Aorta - Ascending Aorta Diameter,cm,Aorta
+av_area_continuity,Aortic Valve - Valve Area - via Continuity Equation,cm2,Aortic Valve
+av_mean_grad,Aortic Valve - Mean Pressure Gradient,mm Hg,Aortic Valve
+av_pk_grad,Aortic Valve - Peak Pressure Gradient,mm Hg,Aortic Valve
+av_pk_vel,Aortic Valve - Peak Velocity,m/s,Aortic Valve
+av_vti,Aortic Valve - Velocity Time Integral,cm,Aortic Valve
+biplane_lvedv,Left Ventricle - End Diastolic Volume - Biplane,mL,Left Ventricle
+biplane_lvef,Left Ventricle - Ejection Fraction - Biplane,%,Left Ventricle
+biplane_lvesv,Left Ventricle - End Systolic Volume - Biplane,mL,Left Ventricle
+descending_diam,Aorta - Descending Thoracic Aorta Diameter,cm,Aorta
+e_e_prime,E To E Prime Ratio,,Mitral Valve
+fs,Left Ventricle - Fractional Shortening,%,Left Ventricle
+inf_lat_thickness,Left Ventricle - Inferolateral Wall Thickness,cm,Left Ventricle
+ivc_diam,Inferior Vena Cava - Diameter,cm,IVC
+la_4ch_length,Left Atrium - Four Chamber Length,cm,Left Atrium
+la_dimen,Left Atrium - Diastolic Dimension,cm,Left Atrium
+la_vol,Left Atrium - Volume,mL,Left Atrium
+lat_e_prime,Mitral Valve - Lateral E Prime,m/s,Mitral Valve
+lateral_E_to_eprime,E To E Prime Ratio - Lateral,,Mitral Valve
+lvedd,Left Ventricle - End Diastolic Dimension,cm,Left Ventricle
+lvesd,Left Ventricle - End Systolic Dimension,cm,Left Ventricle
+lvot_diam,Left Ventricle - LVOT Diameter,cm,Left Ventricle
+lvot_pk_vel,Left Ventricle - Peak LVOT Velocity,m/s,Left Ventricle
+lvot_vti,Left Ventricle - LVOT Velocity Time Integral,cm,Left Ventricle
+mean_E_to_eprime,E To E Prime Ratio - Mean,,Mitral Valve
+mv_e_decel,Mitral Valve - E Wave Deceleration Time,sec,Mitral Valve
+mv_mean_grad,Mitral Valve - Mean Pressure Gradient,mm Hg,Mitral Valve
+mv_peak_a,Mitral Valve - Peak A Wave,m/s,Mitral Valve
+mv_peak_e,Mitral Valve - Peak E Wave,m/s,Mitral Valve
+mv_peak_e_a,Mitral Valve - E/A Ratio,,Mitral Valve
+mv_peak_vel,Mitral Valve - Peak Velocity,m/s,Mitral Valve
+mva2,Mitral Valve - Valve Area - via Pressure Half-Time,cm2,Mitral Valve
+pv_peak_vel,Pulmonary Valve - Peak Velocity,m/s,Pulmonary Valve
+ra_length,Right Atrium - Four Chamber Length,cm,Right Atrium
+rest_lvot,Left Ventricle - Resting LVOT Gradient,mm Hg,Left Ventricle
+rv_diam,Right Ventricle - Diastolic Dimension,cm,Right Ventricle
+sept_e_prime,Mitral Valve - Septal E Prime,m/s,Mitral Valve
+septal_E_to_eprime,E To E Prime Ratio - Septal,,Mitral Valve
+septal_thickness,Left Ventricle - Septal Wall Thickness,cm,Left Ventricle
+sinus_diam,Aorta - Sinus Diameter,cm,Aorta
+tapse,Tricuspid Annular Plane Systolic Excursion,cm,Right Ventricle
+tr_mmhg,Tricuspid Valve - TR Pressure Gradient,mm Hg,Tricuspid Valve
+tr_velocity,Tricuspid Valve - TR Jet Velocity,m/s,Tricuspid Valve

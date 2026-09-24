@@ -1,0 +1,37 @@
+task: pretrain_echotab
+
+encoder:
+  echo:
+    checkpoint_path: ${model_dir}/model_weights/echo_prime_encoder.pt # EchoPrime weights
+    freeze_first_n_layers: 0 # number of EchoPrime blocks to freeze (16 = fully frozen)
+
+l2_loss:
+  # Divide each squared error by the measurement's (winsorized) train-split variance so
+  # that every measurement contributes on its own scale. Requires unnormalized targets.
+  use_var_per_task: true
+
+use_autocast: false # false: forward pass in fp32 under the bf16-mixed trainer
+
+gradient_clip_val: 50
+gradient_clip_algorithm: norm
+
+params:
+  lr_echo_branch: 5e-5
+  lr_tab_branch: 1e-4
+  lr_tab_decoder: 1e-4
+  lr_prediction_head: 1e-4
+  lr: 1e-4 # projections and any group without its own lr
+  weight_decay: 0.0
+  layer_decay: 1.0 # layer-wise lr decay within the EchoPrime encoder
+  betas: [0.9, 0.999]
+
+  scheduler:
+    warmup_cosine:
+      use: true
+      min_lr_factor: 0.1
+      warmup_steps: 2 # epochs
+      total_steps: ${max_epochs} # epochs
+
+  early_stopping:
+    use: false
+    patience: 5

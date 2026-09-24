@@ -1,0 +1,8 @@
+__pycache__/
+*.egg-info/
+.venv/
+training_logs/
+outputs/
+wandb/
+model_weights/*
+!model_weights/.gitkeep
