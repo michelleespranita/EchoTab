@@ -104,7 +104,7 @@ class Metrics():
         Args:
             pred: model outputs. Logits by default; already-normalised
                 probabilities when ``pred_is_probs`` is True (e.g. the
-                ``predict_proba`` output of a scikit-learn linear probe).
+                ``predict_proba`` output of a scikit-learn KNN probe).
             label: ground-truth labels.
             mask: optional validity mask (see subclass implementations).
             pred_is_probs: skip the logits -> probabilities conversion.
@@ -138,7 +138,7 @@ class Metrics():
 
     def _safe_compute_metric(self, metric: Metric):
         # Disable torchmetrics' dist.all_gather — metrics here are CPU-only
-        # (linear probe) and NCCL does not support CPU collectives.
+        # (KNN probe) and NCCL does not support CPU collectives.
         # The compute() wrapper reads _to_sync, not sync_on_compute directly.
         metric._to_sync = False
         metric.sync_on_compute = False

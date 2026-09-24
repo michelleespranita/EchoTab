@@ -8,7 +8,7 @@ ECHOTAB_RUN_DIR=/path/to/training_logs/EchoTab-Pretrain/<experiment_name>
 feature_source="measurement_tokens" # or measurement_tokens_all
 
 for diagnosis in "aortic_stenosis" "aortic_regurg" "mitral_regurg" "la_size" "ra_size" "lv_size" "rv_size" "lvef_class" "rv_function"; do
-    python $ECHOTAB_ROOT/run.py --config-name=base_linearprobe \
+    python $ECHOTAB_ROOT/run.py --config-name=base_knn \
         data_dir=$DATA_DIR \
         echotab_run_dir=$ECHOTAB_RUN_DIR \
         downstream_task=diagnosis_ordinal_classification_mimic \

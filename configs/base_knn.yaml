@@ -22,4 +22,4 @@ test: true
 num_gpus: 1
 
 train:
-  task: linearprobe
+  task: knn

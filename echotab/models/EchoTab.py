@@ -271,7 +271,7 @@ class EchoTab(RegressionLoggingMixin, L.LightningModule):
     # ------------------------------------------------------------------
     def on_save_checkpoint(self, checkpoint: Dict[str, Any]) -> None:
         """Besides the Lightning checkpoint, save each component separately (used by
-        the linear probe, which only needs the encoder) and the run config."""
+        the KNN probe, which only needs the encoder) and the run config."""
         ckpt_dir = os.path.join(self.save_dir, "checkpoints")
         meta = {"cfg": self.cfg, "epoch": self.current_epoch}
 

@@ -1,4 +1,4 @@
-"""Measurement-token features of a pretrained EchoTab model, for linear probing.
+"""Measurement-token features of a pretrained EchoTab model, for the KNN probe.
 
 The frozen EchoTabEncoder maps an echo study to one token per measurement. A study is
 represented by the mean of a subset of these tokens:

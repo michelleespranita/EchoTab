@@ -29,7 +29,7 @@ def configure_experiment_name(cfg: DictConfig) -> str:
         train = f'lrEcho{p.lr_echo_branch}_lr{p.lr}_wd{p.weight_decay}'
         return f'{bs}_{e}_{echo}_{decoder}_{head}_{train}_{cfg.dataset.dataset_name}{suffix}'
 
-    if cfg.train.task == 'linearprobe':
+    if cfg.train.task == 'knn':
         run_name = os.path.basename(os.path.normpath(cfg.echotab_run_dir))
         return f'{run_name}_{cfg.downstream_task.feature_source}{suffix}'
 
@@ -41,10 +41,10 @@ def determine_train_function(cfg: DictConfig):
         from echotab.train_functions.pretrain_echotab import pretrain_echotab
         return pretrain_echotab, 'EchoTab-Pretrain'
 
-    if cfg.train.task == 'linearprobe':
-        from echotab.train_functions.linearprobe import linearprobe
+    if cfg.train.task == 'knn':
+        from echotab.train_functions.knn import knn
         task = cfg.downstream_task
-        return linearprobe, f'EchoTab-LinearProbe-{task.dataset.capitalize()}-{task.target}'
+        return knn, f'EchoTab-KNN-{task.dataset.capitalize()}-{task.target}'
 
     raise ValueError(f'Unknown task: {cfg.train.task}')
 

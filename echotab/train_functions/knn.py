@@ -3,8 +3,8 @@ from lightning.pytorch.loggers import WandbLogger
 from omegaconf import DictConfig
 
 from echotab.datasets.DownstreamEchoDataset import DownstreamEchoDataModule
-from echotab.linear_probe.LinearProbe import LinearProbe
-from echotab.linear_probe.feature_extraction import build_feature_fn, load_pretrained_encoder
+from echotab.knn.KNN import KNN
+from echotab.knn.feature_extraction import build_feature_fn, load_pretrained_encoder
 
 
 def _flatten_metrics(metrics: dict, prefix: str) -> dict:
@@ -19,7 +19,7 @@ def _flatten_metrics(metrics: dict, prefix: str) -> dict:
 
 
 @torch.no_grad()
-def linearprobe(
+def knn(
     cfg: DictConfig,
     wandb_logger: WandbLogger,
     save_dir: str,
@@ -28,15 +28,14 @@ def linearprobe(
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
     datamodule = DownstreamEchoDataModule(cfg=cfg)
-    datamodule.setup(stage='linearprobe')
+    datamodule.setup(stage='knn')
 
     encoder = load_pretrained_encoder(cfg).to(device).eval()
     feature_fn = build_feature_fn(cfg, encoder)
 
-    probe = LinearProbe(
-        task_type=cfg.downstream_task.task_type,
-        device=torch.device('cpu'),
+    probe = KNN(
         num_classes=datamodule.num_classes,
+        device=torch.device('cpu'),
         save_dir=save_dir,
     )
     probe.fit(datamodule.train_dataloader(), feature_fn)

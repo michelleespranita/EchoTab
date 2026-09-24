@@ -161,8 +161,8 @@ The best checkpoint (by `val_metrics/mean_r2`) is evaluated on the validation an
 A k-nearest-neighbour probe (k=5) is fitted on frozen EchoTab measurement tokens: the tokens of the selected measurements are averaged into one feature vector per study.
 
 ```bash
-# base config: configs/base_linearprobe.yaml
-python run.py --config-name=base_linearprobe \
+# base config: configs/base_knn.yaml
+python run.py --config-name=base_knn \
     data_dir=<path-to-data> \
     echotab_run_dir=<path-to-pretraining-run> \
     downstream_task=diagnosis_ordinal_classification_mimic \
@@ -174,7 +174,7 @@ python run.py --config-name=base_linearprobe \
 ```
 Important configs:
 - `echotab_run_dir` is the output directory of the pretraining run (the one that contains `config.yaml` and `checkpoints/`)
-- Diagnosis: `downstream_task.target` (see `configs/downstream_task/diagnosis_ordinal_classification_mimic.yaml`; `scripts/run_linearprobe_echotab.sh` loops over all of them)
+- Diagnosis: `downstream_task.target` (see `configs/downstream_task/diagnosis_ordinal_classification_mimic.yaml`; `scripts/run_knn_echotab.sh` loops over all of them)
 - Study representation:
   - `downstream_task.feature_source=measurement_tokens`: mean of the measurement tokens that `data/mimic/diagnosis_measurement_map.csv` maps to the diagnosis
   - `downstream_task.feature_source=measurement_tokens_all`: mean of the tokens of all measurement tokens

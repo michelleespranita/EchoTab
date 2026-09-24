@@ -179,7 +179,7 @@ class DownstreamEchoDataModule(L.LightningDataModule):
         self._canonical_categories = None
 
     def setup(self, stage: str) -> None:
-        if stage in ('fit', 'linearprobe'):
+        if stage in ('fit', 'knn'):
             self.dataset_train = DownstreamEchoDataset(self.cfg, 'train')
             self._canonical_categories = getattr(self.dataset_train, 'categories', None)
             self.dataset_val = DownstreamEchoDataset(self.cfg, 'val', self._canonical_categories)
