@@ -32,4 +32,3 @@ prediction_head:
   lora_alpha: 16.0          # the delta is scaled by lora_alpha / lora_rank
   hyper_hidden: 256         # hidden width of the hypernetwork body
   hypernet_size: M          # L (A+B in one pass) | M (A and B in two passes) | S (one pass per rank-1 factor)
-  use_single_hypernet: true # share the hypernetwork body between the hidden and the output layer

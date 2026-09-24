@@ -67,7 +67,6 @@ class EchoTab(RegressionLoggingMixin, L.LightningModule):
             lora_alpha=head_cfg.lora_alpha,
             hyper_hidden=head_cfg.hyper_hidden,
             hypernet_size=head_cfg.hypernet_size,
-            use_single_hypernet=head_cfg.use_single_hypernet,
         )
 
         # (1, N) stats used to report metrics / predictions in raw units.

@@ -28,8 +28,8 @@ class PartialSharedHead(nn.Module):
       - h2b: bias head
       conditioned on: measurement embedding
 
-    When use_single_hypernet=True (and num_head_layers > 1), hypernet 1 and hypernet 2
-    share the same body (h1_body is h2_body); the four output heads stay separate.
+    When num_head_layers > 1, hypernet 1 and hypernet 2 share the same body
+    (h1_body is h2_body); the four output heads stay separate.
 
     h1b, h2w and h2b are zero-initialised. h1w has a zero weight and a small uniform
     bias (for L only on the B factor, so that the L delta starts at exactly zero).
@@ -45,7 +45,6 @@ class PartialSharedHead(nn.Module):
         lora_alpha: float = 16.0,
         hyper_hidden: int = 128,
         hypernet_size: str = "L",
-        use_single_hypernet: bool = False,
     ) -> None:
         super().__init__()
         assert num_head_layers >= 1
@@ -54,7 +53,6 @@ class PartialSharedHead(nn.Module):
         self.lora_rank = lora_rank
         self.lora_scale = lora_alpha / lora_rank
         self.hypernet_size = hypernet_size
-        self.use_single_hypernet = use_single_hypernet
 
         n_inter = num_head_layers - 1
 
@@ -105,7 +103,7 @@ class PartialSharedHead(nn.Module):
             nn.init.zeros_(self.h1b_head.bias)
 
         # --- Hypernet 2: final layer ---
-        if use_single_hypernet and n_inter > 0:
+        if n_inter > 0:
             self.h2_body = self.h1_body  # shared body; PyTorch counts params once
         else:
             self.h2_body = self._make_body(cond_dim, hyper_hidden)

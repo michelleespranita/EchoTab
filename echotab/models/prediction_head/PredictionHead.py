@@ -37,7 +37,6 @@ class PredictionHead(nn.Module):
         lora_alpha: float = 16.0,
         hyper_hidden: int = 128,
         hypernet_size: str = "L",
-        use_single_hypernet: bool = False,
     ) -> None:
         super().__init__()
         if head_type not in HEAD_TYPES:
@@ -63,7 +62,6 @@ class PredictionHead(nn.Module):
             self.head = PartialSharedHead(
                 echo_dim, cond_dim, num_head_layers, head_dropout,
                 lora_rank, lora_alpha, hyper_hidden, hypernet_size,
-                use_single_hypernet=use_single_hypernet,
             )
 
     @property
