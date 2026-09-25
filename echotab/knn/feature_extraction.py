@@ -38,7 +38,7 @@ def load_pretrained_encoder(cfg: DictConfig) -> EchoTabEncoder:
     OmegaConf.set_struct(pretrain_cfg, False)
     pretrain_cfg.model.echo.num_frames = cfg.downstream_task.num_frames
     pretrain_cfg.dataset.echo.sampling_rate = cfg.downstream_task.sampling_rate
-    # The EchoPrime weights are restored from echo_branch.ckpt below.
+    # The echo encoder weights are restored from echo_branch.ckpt below.
     pretrain_cfg.train.encoder.echo.checkpoint_path = None
     # The phenotype list only provides the measurement names/order. It can be overridden,
     # e.g. when the path stored in the pretraining config does not exist on this machine.

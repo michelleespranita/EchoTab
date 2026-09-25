@@ -21,9 +21,6 @@ ORDINAL_SEVERITY_CATEGORIES = [
     'Normal', 'Trace', 'Mild', 'Mild-Moderate', 'Moderate', 'Moderate-Severe', 'Severe',
 ]
 
-CLASSIFICATION_TASKS = ('binary_classification', 'multiclass_classification', 'ordinal_classification')
-
-
 class DownstreamEchoDataset(Dataset):
     """Study-level downstream echo dataset (one sample per echo study).
 
@@ -33,12 +30,9 @@ class DownstreamEchoDataset(Dataset):
     __getitem__ returns {'study': {view_type: (T, H, W, C)}, 'label': ..., 'echo_study_id': ...}.
     Use study_collate_fn as the DataLoader collate_fn.
 
-    Labels:
-      classification — a categorical target column (ORDINAL_SEVERITY_CATEGORIES values),
-                       one-hot encoded; the train split defines the label space, which
-                       val/test inherit via canonical_categories.
-      regression     — one or more numeric target columns.
-    Samples with a missing label are dropped.
+    Labels come from a categorical target column (ORDINAL_SEVERITY_CATEGORIES values),
+    one-hot encoded; the train split defines the label space, which val/test inherit
+    via canonical_categories. Samples with a missing label are dropped.
     """
 
     def __init__(
@@ -51,24 +45,15 @@ class DownstreamEchoDataset(Dataset):
         self.cfg = cfg
         self.mode = mode
         task_cfg = cfg.downstream_task
-        self.task_type = task_cfg.task_type
-        target = task_cfg.target
-        self.target = [target] if isinstance(target, str) else list(target)
+        self.target = task_cfg.target
 
         df = pd.read_csv(task_cfg.paths[f'data_{mode}']).reset_index(drop=True)
         self.excluded_view_types: List[str] = list(task_cfg.get("excluded_view_types", None) or [])
         first_positions = self._init_study_index(df)
 
         rows = df.loc[first_positions]
-        if self.task_type == 'regression':
-            self.labels = torch.tensor(rows[self.target].values.astype(float)).float()
-            self.num_classes = len(self.target)
-            keep = [i for i in range(len(self.labels)) if not torch.isnan(self.labels[i]).all()]
-        elif self.task_type in CLASSIFICATION_TASKS:
-            self.labels = self._categorical_to_onehot(rows[self.target[0]].tolist(), canonical_categories)
-            keep = [i for i in range(len(self.labels)) if not torch.isnan(self.labels[i]).any()]
-        else:
-            raise ValueError(f"Unsupported task_type: {self.task_type!r}")
+        self.labels = self._categorical_to_onehot(rows[self.target].tolist(), canonical_categories)
+        keep = [i for i in range(len(self.labels)) if not torch.isnan(self.labels[i]).any()]
 
         self.study_ids = [self.study_ids[i] for i in keep]
         self.study_views = [self.study_views[i] for i in keep]
@@ -109,7 +94,7 @@ class DownstreamEchoDataset(Dataset):
         unknown = present - set(ORDINAL_SEVERITY_CATEGORIES)
         if unknown:
             raise ValueError(
-                f"Target column {self.target[0]!r} contains categories not in the canonical "
+                f"Target column {self.target!r} contains categories not in the canonical "
                 f"severity ordering: {sorted(unknown)}. Expected a subset of {ORDINAL_SEVERITY_CATEGORIES}."
             )
 
@@ -133,7 +118,7 @@ class DownstreamEchoDataset(Dataset):
 
         if out_of_vocabulary:
             warnings.warn(
-                f"[mode={self.mode} | target={self.target[0]!r}] dropping "
+                f"[mode={self.mode} | target={self.target!r}] dropping "
                 f"{sum(out_of_vocabulary.values())} sample(s) whose category is not in the "
                 f"train label space {self.categories}: {out_of_vocabulary}"
             )
@@ -141,10 +126,9 @@ class DownstreamEchoDataset(Dataset):
 
     def _print_label_distribution(self) -> None:
         lines = [f"[{self.mode} | target={self.target}] {len(self.study_ids)} studies"]
-        if self.task_type in CLASSIFICATION_TASKS:
-            classes, counts = np.unique(self.labels.argmax(dim=-1).numpy(), return_counts=True)
-            for c, cnt in zip(classes, counts):
-                lines.append(f'  {self.categories[c]}: {cnt} ({cnt / len(self.labels):.1%})')
+        classes, counts = np.unique(self.labels.argmax(dim=-1).numpy(), return_counts=True)
+        for c, cnt in zip(classes, counts):
+            lines.append(f'  {self.categories[c]}: {cnt} ({cnt / len(self.labels):.1%})')
         print('\n'.join(lines))
 
     def __len__(self) -> int:
@@ -161,13 +145,7 @@ class DownstreamEchoDataset(Dataset):
             )
             for view_type, filepath in self.study_views[idx].items()
         }
-        if self.task_type == 'binary_classification':
-            label = self.labels[idx].argmax(dim=-1)
-        elif self.task_type == 'regression':
-            label = self.labels[idx].squeeze()
-        else:
-            label = self.labels[idx]
-        return {'study': study, 'label': label, 'echo_study_id': self.study_ids[idx]}
+        return {'study': study, 'label': self.labels[idx], 'echo_study_id': self.study_ids[idx]}
 
 
 class DownstreamEchoDataModule(L.LightningDataModule):
@@ -181,7 +159,7 @@ class DownstreamEchoDataModule(L.LightningDataModule):
     def setup(self, stage: str) -> None:
         if stage in ('fit', 'knn'):
             self.dataset_train = DownstreamEchoDataset(self.cfg, 'train')
-            self._canonical_categories = getattr(self.dataset_train, 'categories', None)
+            self._canonical_categories = self.dataset_train.categories
             self.dataset_val = DownstreamEchoDataset(self.cfg, 'val', self._canonical_categories)
             self.num_classes = self.dataset_train.num_classes
         elif stage == 'test':

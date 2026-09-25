@@ -12,7 +12,7 @@ experiment_name:
 suffix:
 
 # Pretrained EchoTab run: directory containing config.yaml and checkpoints/
-echotab_run_dir: ???
+echotab_run_dir:
 # Optional override of the phenotype list stored in the pretraining config.yaml
 label_list_path:
 
