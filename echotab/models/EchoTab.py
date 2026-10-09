@@ -16,7 +16,7 @@ are masked out), optionally weighted by 1/sigma_j^2 per measurement.
 from __future__ import annotations
 
 import os
-from typing import Any, Dict, Sequence
+from typing import Dict, Sequence
 
 import lightning as L
 import numpy as np
@@ -30,12 +30,7 @@ from omegaconf import DictConfig, OmegaConf
 from echotab.models.EchoTabEncoder import EchoTabEncoder
 from echotab.models.RegressionLoggingMixin import RegressionLoggingMixin
 from echotab.models.prediction_head import PredictionHead
-from echotab.util.init_stats import (
-    init_mean_std,
-    init_task_stds,
-    resolve_eval_dropped_phenotypes,
-    validate_var_per_task_cfg,
-)
+from echotab.util.init_stats import init_task_stds, resolve_eval_dropped_phenotypes
 from echotab.util.metrics import init_metrics_fn
 from echotab.util.model import HookDrivenModelCheckpoint, get_grad_norm_
 from echotab.util.optimizer import create_optimizer_and_scheduler
@@ -54,30 +49,15 @@ class EchoTab(RegressionLoggingMixin, L.LightningModule):
         self.labels = self.encoder.labels
 
         print('Initializing the prediction head...')
-        head_cfg = cfg.model.prediction_head
-        self.prediction_head = PredictionHead(
-            head_type=head_cfg.head_type,
-            echo_dim=self.encoder.echo_branch.echo_dim,
-            num_features=self.encoder.n_features,
-            num_head_layers=head_cfg.num_head_layers,
-            head_dropout=head_cfg.head_dropout,
-            cond_dim=cfg.model.tab.embed_dim,
-            cond_proj_dim=head_cfg.cond_proj_dim,
-            lora_rank=head_cfg.lora_rank,
-            lora_alpha=head_cfg.lora_alpha,
-            hyper_hidden=head_cfg.hyper_hidden,
-            hypernet_size=head_cfg.hypernet_size,
+        self.prediction_head = PredictionHead.from_config(
+            cfg, echo_dim=self.encoder.echo_branch.echo_dim, num_features=self.encoder.n_features,
         )
-
-        # (1, N) stats used to report metrics / predictions in raw units.
-        self.mean, self.std = init_mean_std(cfg)
 
         # Variance-weighted reconstruction loss: dividing each squared error by the
         # measurement's train variance lets every measurement contribute on its own
         # scale rather than in proportion to its units squared.
         self.use_var_per_task = cfg.train.l2_loss.use_var_per_task
         if self.use_var_per_task:
-            validate_var_per_task_cfg(cfg)
             # Not persistent: derived from the train split and rebuilt on every load.
             self.register_buffer('target_var', init_task_stds(cfg).pow(2), persistent=False)
 
@@ -100,7 +80,7 @@ class EchoTab(RegressionLoggingMixin, L.LightningModule):
         study: Dict[str, torch.Tensor],
         view_present_mask: Dict[str, torch.Tensor] | None = None,
     ) -> torch.Tensor:
-        """Predict every measurement from the echo study: (B, N), normalised units."""
+        """Predict every measurement from the echo study: (B, N), raw units."""
         z_out, _ = self.encoder(study, view_present_mask)  # (B, N, D)
         cond_emb = (
             self.encoder.tab_branch.conditioning_emb()
@@ -269,9 +249,14 @@ class EchoTab(RegressionLoggingMixin, L.LightningModule):
     # ------------------------------------------------------------------
     # Checkpoint saving
     # ------------------------------------------------------------------
-    def on_save_checkpoint(self, checkpoint: Dict[str, Any]) -> None:
+    def save_component_checkpoints(self) -> None:
         """Besides the Lightning checkpoint, save each component separately (used by
-        the KNN probe, which only needs the encoder) and the run config."""
+        the KNN probe, which only needs the encoder, and by EchoTabInference) and the
+        run config, so that the checkpoint directory is self-contained.
+
+        Called by HookDrivenModelCheckpoint on rank 0 after each Lightning checkpoint.
+        This is deliberately not Lightning's on_save_checkpoint hook, which runs on
+        every rank and would write the same files from all of them."""
         ckpt_dir = os.path.join(self.save_dir, "checkpoints")
         meta = {"cfg": self.cfg, "epoch": self.current_epoch}
 
@@ -280,4 +265,4 @@ class EchoTab(RegressionLoggingMixin, L.LightningModule):
             {"model": self.prediction_head.state_dict(), **meta},
             os.path.join(ckpt_dir, "prediction_head.ckpt"),
         )
-        OmegaConf.save(self.cfg, os.path.join(self.save_dir, "config.yaml"))
+        OmegaConf.save(self.cfg, os.path.join(ckpt_dir, "config.yaml"))

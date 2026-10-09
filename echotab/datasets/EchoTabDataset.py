@@ -1,8 +1,8 @@
 """Dataset for EchoTab pretraining.
 
 Each sample is one echo study paired with the structured measurements of its report.
-Measurements are winsorized (and optionally z-score normalised) with statistics fit
-on the train split; missing values are NaN.
+Measurements are winsorized with bounds fit on the train split and kept in raw units;
+missing values are NaN.
 
 Echo views are returned as a per-view-type dict {view_type: (T, H, W, C)} so that
 EchoBranch can process each canonical view independently. Use study_collate_fn as the
@@ -20,7 +20,7 @@ from omegaconf import DictConfig
 from torch.utils.data import Dataset
 
 from echotab.util.echoprime import VIEW_TYPES, load_echoprime_clip
-from echotab.util.init_stats import apply_winsor_bounds, init_mean_std, init_winsor_bounds, load_label_list
+from echotab.util.init_stats import apply_winsor_bounds, init_winsor_bounds, load_label_list
 
 
 class EchoTabDataset(Dataset):
@@ -69,17 +69,10 @@ class EchoTabDataset(Dataset):
         self._build_tabular_data()
 
     def _build_tabular_data(self) -> None:
-        """Winsorize (+ optionally z-score) the measurements with train-split statistics."""
+        """Winsorize the measurements with train-split bounds; they stay in raw units."""
         apply_winsor_bounds(
             self.data, init_winsor_bounds(self.cfg, self.label_list, verbose=True)
         )
-
-        if self.cfg.dataset.tab.normalization.use:
-            means, stds = init_mean_std(self.cfg)  # both (1, N)
-            for i, col in enumerate(self.label_list):
-                self.data[col] = (self.data[col] - float(means[0, i])) / float(stds[0, i])
-        else:
-            print("No label normalisation applied")
 
         self._tab_lookup = (
             self.data[["echo_study_id"] + self.label_list]

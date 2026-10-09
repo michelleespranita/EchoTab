@@ -23,12 +23,12 @@ FEATURE_SOURCES = ('measurement_tokens', 'measurement_tokens_all')
 def load_pretrained_encoder(cfg: DictConfig) -> EchoTabEncoder:
     """Rebuild the EchoTabEncoder of a pretraining run and restore its weights.
 
-    The architecture is read from the run's own config.yaml (``{echotab_run_dir}/config.yaml``),
+    The architecture is read from the run's own config.yaml (``{echotab_run_dir}/checkpoints/config.yaml``),
     the weights from its per-component checkpoints (``{echotab_run_dir}/checkpoints/*.ckpt``).
     Only the clip shape (num_frames / sampling_rate) is taken from the downstream task.
     """
     run_dir = cfg.echotab_run_dir
-    pretrain_cfg_path = os.path.join(run_dir, "config.yaml")
+    pretrain_cfg_path = os.path.join(run_dir, "checkpoints", "config.yaml")
     if not os.path.exists(pretrain_cfg_path):
         raise FileNotFoundError(
             f"Could not find the pretraining run's config.yaml at {pretrain_cfg_path}."

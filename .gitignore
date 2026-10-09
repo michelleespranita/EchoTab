@@ -6,3 +6,10 @@ outputs/
 wandb/
 model_weights/*
 !model_weights/.gitkeep
+checkpoints/*
+!checkpoints/.gitkeep
+echotab.zip
+sample_study/*
+training_logs/*
+job_outputs/*
+*/.ipynb_checkpoints/*

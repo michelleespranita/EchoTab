@@ -29,9 +29,6 @@ tab:
     lower_percentile: 1.0
     upper_percentile: 99.0
     physical_bounds: null # optional {phenotype: [lo, hi]}, overrides the percentiles
-  normalization:
-    use: false # must be false with train.l2_loss.use_var_per_task=true
-    normalize_per_target: true
   # Phenotypes with fewer non-missing studies than this in any split are excluded from
   # the evaluation metrics (and from winsorization).
   min_eval_samples: 5

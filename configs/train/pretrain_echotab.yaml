@@ -7,7 +7,7 @@ encoder:
 
 l2_loss:
   # Divide each squared error by the measurement's (winsorized) train-split variance so
-  # that every measurement contributes on its own scale. Requires unnormalized targets.
+  # that every measurement contributes on its own scale.
   use_var_per_task: true
 
 use_autocast: false # false: forward pass in fp32 under the bf16-mixed trainer

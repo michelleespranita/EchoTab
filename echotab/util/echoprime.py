@@ -1,8 +1,11 @@
 import os
+from typing import Dict, Iterable, List, Tuple
 
 import cv2
 import numpy as np
+import pandas as pd
 import torch
+import torch.nn as nn
 from decord import VideoReader, cpu
 
 VIEW_TYPES = [
@@ -90,3 +93,40 @@ def load_echoprime_clip(
     video = torch.from_numpy(scaled).permute(3, 0, 1, 2)  # (C, T, H, W) for broadcasting
     video = (video - ECHOPRIME_MEAN) / ECHOPRIME_STD
     return video.permute(1, 2, 3, 0)  # (T, H, W, C)
+
+
+def load_study(
+    paths: List[str],
+    view_classifier: nn.Module,
+    excluded_view_types: Iterable[str] = (),
+) -> Tuple[Dict[str, torch.Tensor], pd.DataFrame]:
+    """Load all clips of a study and assign them to view types with the view classifier.
+
+    Each clip is assigned to its most likely view type. If several clips are assigned to
+    the same view type, the one with the highest classifier confidence is used (the first
+    one on ties). Clips assigned to an excluded view type (cfg.dataset.echo.excluded_view_types,
+    i.e. views the model was not trained on) are not used.
+
+    Returns:
+        study:       view_type -> (1, T, H, W, C), the input of EchoTabEncoder
+        assignments: one row per clip with columns path, view, confidence, selected
+    """
+    excluded_view_types = set(excluded_view_types)
+    best: Dict[str, Tuple[float, int, torch.Tensor]] = {}  # view_type -> (confidence, row, clip)
+    rows = []
+    for path in paths:
+        clip = load_echoprime_clip(path)
+        confidence, view_idx = view_classifier(clip.unsqueeze(0))[0].max(dim=-1)
+        view, confidence = VIEW_TYPES[view_idx.item()], confidence.item()
+        rows.append({'path': path, 'view': view, 'confidence': confidence, 'selected': False})
+
+        if view not in excluded_view_types and (view not in best or confidence > best[view][0]):
+            best[view] = (confidence, len(rows) - 1, clip)
+
+    study = {}
+    for view in VIEW_TYPES:  # canonical view order
+        if view in best:
+            _, row, clip = best[view]
+            rows[row]['selected'] = True
+            study[view] = clip.unsqueeze(0)
+    return study, pd.DataFrame(rows, columns=['path', 'view', 'confidence', 'selected'])

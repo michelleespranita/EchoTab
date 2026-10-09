@@ -11,7 +11,7 @@ save_dir: ${model_dir}/training_logs
 experiment_name:
 suffix:
 
-# Pretrained EchoTab run: directory containing config.yaml and checkpoints/
+# Pretrained EchoTab run: directory containing checkpoints/ (with config.yaml)
 echotab_run_dir:
 # Optional override of the phenotype list stored in the pretraining config.yaml
 label_list_path:

@@ -1,4 +1,5 @@
 #!/bin/bash
+
 # EchoTab pretraining on MIMIC with the hyperparameters used in the paper
 # (all of them are the defaults in configs/; listed here for visibility).
 

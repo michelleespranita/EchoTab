@@ -4,7 +4,6 @@ Regression-metric computation, logging and result saving for EchoTab.
 Concrete classes must set the following attributes before calling any method:
 
     self.labels                  : List[str]     — ordered phenotype names
-    self.mean, self.std          : torch.Tensor  — (1, N), for de-normalisation
     self.eval_dropped_phenotypes : set           — phenotypes excluded from metrics
     self.batch_size              : int
     self.save_dir                : str
@@ -24,20 +23,13 @@ from echotab.util.metrics import init_metrics_fn
 
 class RegressionLoggingMixin:
 
-    def _denormalize(self, preds: torch.Tensor, labels: torch.Tensor, label_masks: torch.Tensor):
-        preds = preds * self.std + self.mean
-        labels = torch.where(~label_masks, labels * self.std + self.mean, labels)
-        return preds, labels
-
     def _compute_per_study_metrics(
         self,
-        preds: torch.Tensor,        # (n_studies, N), normalised
-        labels: torch.Tensor,       # (n_studies, N), normalised, NaN where missing
+        preds: torch.Tensor,        # (n_studies, N), raw units
+        labels: torch.Tensor,       # (n_studies, N), raw units, NaN where missing
         label_masks: torch.Tensor,  # (n_studies, N) bool, True = missing
     ) -> Dict[str, Dict[str, Any]]:
         """Per-phenotype metrics in raw units; rare phenotypes are left out."""
-        preds, labels = self._denormalize(preds, labels, label_masks)
-
         metrics_dict = {}
         for idx, label in enumerate(self.labels):
             if label in self.eval_dropped_phenotypes:
@@ -99,7 +91,6 @@ class RegressionLoggingMixin:
         filename: str,
     ) -> None:
         """One row per study with {phenotype}_label / _label_mask / _pred columns, raw units."""
-        preds, labels = self._denormalize(preds, labels, label_masks)
         columns = {'echo_study_id': study_ids}
         for idx, label in enumerate(self.labels):
             columns[f'{label}_label'] = labels[:, idx].tolist()

@@ -2,6 +2,7 @@ from typing import Optional
 
 import torch
 import torch.nn as nn
+from omegaconf import DictConfig
 
 from .IndependentHeads import IndependentHeads
 from .PartialSharedHead import PartialSharedHead
@@ -63,6 +64,24 @@ class PredictionHead(nn.Module):
                 echo_dim, cond_dim, num_head_layers, head_dropout,
                 lora_rank, lora_alpha, hyper_hidden, hypernet_size,
             )
+
+    @classmethod
+    def from_config(cls, cfg: DictConfig, echo_dim: int, num_features: int) -> "PredictionHead":
+        """Build the head from a run config (cfg.model.prediction_head)."""
+        head_cfg = cfg.model.prediction_head
+        return cls(
+            head_type=head_cfg.head_type,
+            echo_dim=echo_dim,
+            num_features=num_features,
+            num_head_layers=head_cfg.num_head_layers,
+            head_dropout=head_cfg.head_dropout,
+            cond_dim=cfg.model.tab.embed_dim,
+            cond_proj_dim=head_cfg.cond_proj_dim,
+            lora_rank=head_cfg.lora_rank,
+            lora_alpha=head_cfg.lora_alpha,
+            hyper_hidden=head_cfg.hyper_hidden,
+            hypernet_size=head_cfg.hypernet_size,
+        )
 
     @property
     def needs_conditioning(self) -> bool:

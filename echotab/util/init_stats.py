@@ -1,5 +1,5 @@
 import os
-from typing import List, Optional, Tuple
+from typing import List
 
 import numpy as np
 import pandas as pd
@@ -80,38 +80,12 @@ def apply_winsor_bounds(df: pd.DataFrame, bounds: dict) -> pd.DataFrame:
     return df
 
 
-def init_mean_std(cfg: DictConfig) -> Tuple[torch.Tensor, torch.Tensor]:
-    """Per-target (or global) winsorized mean/std fit on the train split.
-
-    Returns (means, stds), each of shape (1, N). Zeros / ones when normalization is
-    disabled, so that ``pred * std + mean`` is always the raw-unit prediction.
-    """
-    labels = load_label_list(cfg)
-    norm_cfg = cfg.dataset.tab.normalization
-
-    if not norm_cfg.use:
-        return torch.zeros(1, len(labels)), torch.ones(1, len(labels))
-
-    data_train = _load_train_split(cfg, labels)
-    apply_winsor_bounds(data_train, init_winsor_bounds(cfg, labels))
-
-    if norm_cfg.normalize_per_target:
-        means = torch.tensor([data_train[l].mean() for l in labels]).float().unsqueeze(0)
-        stds = torch.tensor([data_train[l].std() for l in labels]).float().unsqueeze(0)
-    else:
-        all_vals = data_train[labels].to_numpy(dtype=np.float64).ravel()
-        means = torch.tensor(np.nanmean(all_vals)).expand(len(labels)).float().unsqueeze(0)
-        stds = torch.tensor(np.nanstd(all_vals, ddof=1)).expand(len(labels)).float().unsqueeze(0)
-    return means, stds
-
-
 def init_task_stds(cfg: DictConfig, verbose: bool = True) -> torch.Tensor:
     """Per-target winsorized standard deviation sigma_j, fit on the train split.
 
-    Used as the weight 1/sigma_j^2 of the variance-weighted reconstruction loss, which
-    is the raw-value substitute for per-target normalization: every measurement then
-    contributes to the gradient on its own scale rather than in proportion to its
-    units squared.
+    Used as the weight 1/sigma_j^2 of the variance-weighted reconstruction loss on the
+    raw-unit targets: every measurement then contributes to the gradient on its own
+    scale rather than in proportion to its units squared.
 
     Returns (N,) aligned to the label order.
     """
@@ -144,15 +118,6 @@ def init_task_stds(cfg: DictConfig, verbose: bool = True) -> torch.Tensor:
             print(f'  {l:<20} std={s:<12.4g} n={n}')
 
     return stds
-
-
-def validate_var_per_task_cfg(cfg: DictConfig) -> None:
-    """The variance-weighted loss is only defined for unnormalized (raw) targets:
-    normalized targets already have unit variance, so it would double-correct."""
-    if cfg.dataset.tab.normalization.use:
-        raise ValueError(
-            "train.l2_loss.use_var_per_task=true requires dataset.tab.normalization.use=false."
-        )
 
 
 def resolve_eval_dropped_phenotypes(cfg: DictConfig, labels: List[str]) -> set:

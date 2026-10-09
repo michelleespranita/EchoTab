@@ -1,4 +1,5 @@
 #!/bin/bash
+
 # Diagnosis classification on MIMIC with kNN probes on frozen EchoTab measurement tokens.
 
 export ECHOTAB_ROOT=${ECHOTAB_ROOT:-$(cd "$(dirname "$0")/.." && pwd)}

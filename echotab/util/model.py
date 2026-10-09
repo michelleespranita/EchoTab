@@ -26,8 +26,8 @@ def get_grad_norm_(parameters, norm_type: float = 2.0) -> torch.Tensor:
 class HookDrivenModelCheckpoint(ModelCheckpoint):
     """
     Keep ModelCheckpoint's scheduling/monitoring behavior and save the usual
-    Lightning checkpoint artifact, then delegate additional custom artifact
-    writing (per-component checkpoints) to LightningModule.on_save_checkpoint().
+    Lightning checkpoint artifact, then write the per-component checkpoints once,
+    on rank 0, via LightningModule.save_component_checkpoints().
     """
 
     def _save_checkpoint(self, trainer: L.Trainer, filepath: str) -> None:
@@ -37,22 +37,10 @@ class HookDrivenModelCheckpoint(ModelCheckpoint):
         if not trainer.is_global_zero:
             return
 
-        checkpoint = {
-            'epoch': trainer.current_epoch,
-            'global_step': trainer.global_step,
-        }
-
-        if self.monitor is not None:
-            monitor_value = trainer.callback_metrics.get(self.monitor)
-            if isinstance(monitor_value, torch.Tensor):
-                monitor_value = monitor_value.detach().cpu().item()
-            checkpoint[self.monitor] = monitor_value
-
-        trainer.lightning_module.on_save_checkpoint(checkpoint)
+        trainer.lightning_module.save_component_checkpoints()
         self._last_global_step_saved = trainer.global_step
 
     def _remove_checkpoint(self, trainer: L.Trainer, filepath: str) -> None:
-        # We do custom saving in on_save_checkpoint and may not create the
-        # callback-managed filepath at all.
+        # Tolerate a callback-managed checkpoint file that no longer exists.
         if os.path.exists(filepath):
             super()._remove_checkpoint(trainer, filepath)
