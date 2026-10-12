@@ -2,7 +2,22 @@
 
 This is the official PyTorch implementation of EchoTab.
 
+[![Preprint](https://img.shields.io/badge/arXiv-2610.13599-b31b1b)](https://arxiv.org/abs/2610.13599)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+If you find this work useful, please cite:
+
+```bibtex
+@misc{liman2026echotablearningmeasurementgroundedrepresentations,
+      title={EchoTab: Learning Measurement-Grounded Representations for Echocardiographic Diagnosis through Tabular Reconstruction}, 
+      author={Michelle Espranita Liman and Ioana Ionac and Alexander Müller and Eimo Martens and Daniel Rueckert and Philip Müller},
+      year={2026},
+      eprint={2610.13599},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG},
+      url={https://arxiv.org/abs/2610.13599}, 
+}
+```
 
 EchoTab is a measurement-grounded representation learning framework for multi-view echo studies. Given an echo study, each individual view is first encoded by the echo encoder, resulting in a set of echo tokens per view. A tabular decoder with measurement queries then associates tokens across views with specific measurements, producing measurement tokens that the prediction head maps to the final measurements. The framework is trained end-to-end with a tabular reconstruction objective, after which relevant measurement tokens can be selected for accurate downstream diagnosis.
 
