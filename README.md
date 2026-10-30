@@ -69,7 +69,7 @@ Download the EchoPrime view classifier weights (`view_classifier.pt`, in `model_
 
 **3. Download the pre-trained EchoTab weights**
 
-Download the pre-trained EchoTab model [here](https://drive.google.com/file/d/1mRDfAeNOCD1CZomBokeXQ-ovyTIJzEX5/view?usp=share_link). Place them in `checkpoints/`.
+Download the pre-trained EchoTab model [here](https://drive.google.com/file/d/1mRDfAeNOCD1CZomBokeXQ-ovyTIJzEX5/view?usp=share_link). This is the version pre-trained on the MIMIC-IV-Echo dataset. Place the downloaded .zip file in `checkpoints/` and unzip it inside.
 
 **4. (Optional) Download EchoPrime echo encoder weights**
 
